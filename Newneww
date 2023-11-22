@@ -1,145 +1,102 @@
-import android.content.ActivityNotFoundException
-import android.os.Bundle
-import android.provider.MediaStore
-import android.util.Log
-import android.widget.Button
-import android.widget.Toast
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    tools:ignore="HardcodedText">
+
+
+    <TextView
+        android:id="@+id/headingText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="32dp"
+        android:text="MEDIA PLAYER"
+        android:textSize="28sp"
+        android:textStyle="bold" />
+
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/img" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/headingText"
+        android:layout_marginVertical="500dp"
+        android:gravity="center_horizontal">
+
+        <Button
+            android:id="@+id/playButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="PLAY"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            android:backgroundTint="@color/white" />
+
+        <Button
+            android:id="@+id/pauseButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PAUSE"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            android:backgroundTint="@color/white"/>
+
+        <Button
+            android:id="@+id/stopButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="STOP"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            android:backgroundTint="@color/white" />
+
+    </LinearLayout>
+
+</RelativeLayout>
+
+
+package com.example.mediaplayer1
+
 import androidx.activity.ComponentActivity
-import com.example.mytaskcamera.R
+import android.media.MediaPlayer
+import android.os.Bundle
+import android.widget.Button
 
 class MainActivity : ComponentActivity() {
 
-    private val TAG = "MainActivity"
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_main)
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+            // create an instance of mediplayer for audio playback
+            val mediaPlayer: MediaPlayer = MediaPlayer.create(applicationContext, R.raw.music1)
 
-        val myButton: Button = findViewById(R.id.myButton)
+            val bPlay: Button = findViewById(R.id.playButton)
+            val bPause: Button = findViewById(R.id.pauseButton)
+            val bStop: Button = findViewById(R.id.stopButton)
 
-        Log.d(TAG, "onCreate")
+            bPlay.setOnClickListener {
+                mediaPlayer.start()
+            }
 
-        myButton.setOnClickListener {
-            myCamera()
-            myMessage("Button has been clicked")
-        }
-    }
+            bPause.setOnClickListener {
+                mediaPlayer.pause()
+            }
 
-    override fun onStart() {
-        super.onStart()
-        Log.d(TAG, "onStart")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.d(TAG, "onResume")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d(TAG, "onPause")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d(TAG, "onStop")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d(TAG, "onDestroy")
-    }
-
-    private fun myCamera() {
-        val REQUEST_IMAGE_CAPTURE = 1
-        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        try {
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-        } catch (e: ActivityNotFoundException) {
-            Log.e(TAG, "Error starting camera activity: ${e.message}")
-        }
-    }
-
-    private fun myMessage(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-    }
-}
-
-
-
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.os.Bundle
-import android.provider.MediaStore
-import android.util.Log
-import android.widget.Toast
-import androidx.activity.ComponentActivity
-import com.example.mytaskcamera.R
-
-class VideoCaptureActivity : ComponentActivity() {
-
-    private val TAG = "VideoCaptureActivity"
-    private val REQUEST_VIDEO_CAPTURE = 1
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_video_capture)
-
-        Log.d(TAG, "onCreate")
-        dispatchTakeVideoIntent()
-    }
-
-    private fun dispatchTakeVideoIntent() {
-        Intent(MediaStore.ACTION_VIDEO_CAPTURE).also { takeVideoIntent ->
-            takeVideoIntent.resolveActivity(packageManager)?.also {
-                startActivityForResult(takeVideoIntent, REQUEST_VIDEO_CAPTURE)
-                Log.d(TAG, "Video capture intent dispatched")
-            } ?: run {
-                Log.e(TAG, "Error resolving video capture activity.")
-                // Display an error state to the user if needed.
-                Toast.makeText(this, "Error capturing video", Toast.LENGTH_SHORT).show()
-                finish() // Finish the activity if unable to resolve video capture activity.
+            bStop.setOnClickListener {
+                mediaPlayer.stop()
+                mediaPlayer.prepare()
             }
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        Log.d(TAG, "onActivityResult")
-        if (requestCode == REQUEST_VIDEO_CAPTURE && resultCode == RESULT_OK) {
-            // Video captured successfully, you can handle the result if needed.
-            Toast.makeText(this, "Video captured successfully", Toast.LENGTH_SHORT).show()
-            Log.d(TAG, "Video captured successfully")
-        } else {
-            // Handle the case where video capture was not successful.
-            Toast.makeText(this, "Video capture failed", Toast.LENGTH_SHORT).show()
-            Log.e(TAG, "Video capture failed")
-        }
-        finish() // Finish the activity after capturing video.
-    }
-
-    override fun onStart() {
-        super.onStart()
-        Log.d(TAG, "onStart")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.d(TAG, "onResume")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d(TAG, "onPause")
-    }
-
-    override fun onStop() {
-        super.onStop()
-        Log.d(TAG, "onStop")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.d(TAG, "onDestroy")
-    }
 }
+
