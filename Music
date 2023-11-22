@@ -187,3 +187,97 @@ class PlaylistActivity : AppCompatActivity() {
         android:backgroundTint="@color/white" />
 
 </LinearLayout>
+
+
+
+
+bajjsjsjs
+
+
+
+
+<!-- Music Item 1 -->
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Music 1" />
+
+    <Button
+        android:id="@+id/playButton1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PLAY"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        android:backgroundTint="@color/white" />
+</LinearLayout>
+
+<!-- Music Item 2 -->
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Music 2" />
+
+    <Button
+        android:id="@+id/playButton2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PLAY"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        android:backgroundTint="@color/white" />
+</LinearLayout>
+
+
+
+
+
+class PlaylistActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_playlist)
+
+        val mediaPlayer1: MediaPlayer = MediaPlayer.create(applicationContext, R.raw.music1)
+        val mediaPlayer2: MediaPlayer = MediaPlayer.create(applicationContext, R.raw.music2)
+
+        val playButton1: Button = findViewById(R.id.playButton1)
+        val playButton2: Button = findViewById(R.id.playButton2)
+        val pauseButton: Button = findViewById(R.id.pauseButton)
+        val stopButton: Button = findViewById(R.id.stopButton)
+
+        playButton1.setOnClickListener {
+            mediaPlayer1.start()
+        }
+
+        playButton2.setOnClickListener {
+            mediaPlayer2.start()
+        }
+
+        pauseButton.setOnClickListener {
+            mediaPlayer1.pause()
+            mediaPlayer2.pause()
+        }
+
+        stopButton.setOnClickListener {
+            mediaPlayer1.stop()
+            mediaPlayer1.prepare()
+            mediaPlayer2.stop()
+            mediaPlayer2.prepare()
+        }
+    }
+}
