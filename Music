@@ -7,65 +7,72 @@ import android.os.Bundle
 import android.widget.Button
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.example.mediaplayer1.ui.theme.MediaPlayer1Theme
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Set the initial layout
         setContentView(R.layout.activity_main)
 
-        // create an instance of media player for audio playback
-        val mediaPlayer: MediaPlayer = MediaPlayer.create(applicationContext, R.raw.music1)
-
-        val bPlay: Button = findViewById(R.id.playButton)
-        val bPause: Button = findViewById(R.id.pauseButton)
-        val bStop: Button = findViewById(R.id.stopButton)
         val getStartedButton: Button = findViewById(R.id.getStartedButton)
-
-        bPlay.setOnClickListener {
-            mediaPlayer.start()
-        }
-
-        bPause.setOnClickListener {
-            mediaPlayer.pause()
-        }
-
-        bStop.setOnClickListener {
-            mediaPlayer.stop()
-            mediaPlayer.prepare()
-        }
 
         getStartedButton.setOnClickListener {
             // Navigate to the playlist activity
             val intent = Intent(this, PlaylistActivity::class.java)
+            intent.putExtra("selectedMusic", 1) // Default to music1, you can change this for different music
             startActivity(intent)
         }
     }
 }
 
 
-
 // PlaylistActivity.kt
 package com.example.mediaplayer1
 
+import android.media.MediaPlayer
 import android.os.Bundle
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 
 class PlaylistActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Set the content view to your playlist layout file (e.g., activity_playlist.xml)
         setContentView(R.layout.activity_playlist)
+
+        val selectedMusic = intent.getIntExtra("selectedMusic", 1)
+        val mediaPlayer: MediaPlayer = MediaPlayer.create(applicationContext, getResourceIdForMusic(selectedMusic))
+
+        val playButton: Button = findViewById(R.id.playButton)
+        val pauseButton: Button = findViewById(R.id.pauseButton)
+        val stopButton: Button = findViewById(R.id.stopButton)
+
+        playButton.setOnClickListener {
+            mediaPlayer.start()
+        }
+
+        pauseButton.setOnClickListener {
+            mediaPlayer.pause()
+        }
+
+        stopButton.setOnClickListener {
+            mediaPlayer.stop()
+            mediaPlayer.prepare()
+        }
+    }
+
+    private fun getResourceIdForMusic(selectedMusic: Int): Int {
+        return when (selectedMusic) {
+            1 -> R.raw.music1
+            2 -> R.raw.music2
+            else -> R.raw.music1 // Default to music1
+        }
     }
 }
 
 
 
-<!-- activity_main.xml -->
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -95,7 +102,7 @@ class PlaylistActivity : AppCompatActivity() {
         android:id="@+id/getStartedButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/ImageViewId" <!-- Replace ImageViewId with the actual ID of your ImageView -->
+        android:layout_below="@id/ImageViewId"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
         android:text="GET STARTED"
@@ -107,7 +114,6 @@ class PlaylistActivity : AppCompatActivity() {
 
 
 
-<!-- activity_playlist.xml -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -128,6 +134,7 @@ class PlaylistActivity : AppCompatActivity() {
             android:text="Music 1" />
 
         <Button
+            android:id="@+id/playButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="PLAY"
@@ -150,6 +157,7 @@ class PlaylistActivity : AppCompatActivity() {
             android:text="Music 2" />
 
         <Button
+            android:id="@+id/playButton" <!-- Adjust the IDs for play, pause, and stop buttons as needed -->
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="PLAY"
@@ -157,5 +165,25 @@ class PlaylistActivity : AppCompatActivity() {
             android:textStyle="bold"
             android:backgroundTint="@color/white" />
     </LinearLayout>
+
+    <!-- Add similar layouts for Music 2 with corresponding buttons -->
+
+    <Button
+        android:id="@+id/pauseButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PAUSE"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        android:backgroundTint="@color/white" />
+
+    <Button
+        android:id="@+id/stopButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="STOP"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        android:backgroundTint="@color/white" />
 
 </LinearLayout>
