@@ -64,3 +64,82 @@ class MainActivity : ComponentActivity() {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
+
+
+
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import com.example.mytaskcamera.R
+
+class VideoCaptureActivity : ComponentActivity() {
+
+    private val TAG = "VideoCaptureActivity"
+    private val REQUEST_VIDEO_CAPTURE = 1
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_video_capture)
+
+        Log.d(TAG, "onCreate")
+        dispatchTakeVideoIntent()
+    }
+
+    private fun dispatchTakeVideoIntent() {
+        Intent(MediaStore.ACTION_VIDEO_CAPTURE).also { takeVideoIntent ->
+            takeVideoIntent.resolveActivity(packageManager)?.also {
+                startActivityForResult(takeVideoIntent, REQUEST_VIDEO_CAPTURE)
+                Log.d(TAG, "Video capture intent dispatched")
+            } ?: run {
+                Log.e(TAG, "Error resolving video capture activity.")
+                // Display an error state to the user if needed.
+                Toast.makeText(this, "Error capturing video", Toast.LENGTH_SHORT).show()
+                finish() // Finish the activity if unable to resolve video capture activity.
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Log.d(TAG, "onActivityResult")
+        if (requestCode == REQUEST_VIDEO_CAPTURE && resultCode == RESULT_OK) {
+            // Video captured successfully, you can handle the result if needed.
+            Toast.makeText(this, "Video captured successfully", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "Video captured successfully")
+        } else {
+            // Handle the case where video capture was not successful.
+            Toast.makeText(this, "Video capture failed", Toast.LENGTH_SHORT).show()
+            Log.e(TAG, "Video capture failed")
+        }
+        finish() // Finish the activity after capturing video.
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d(TAG, "onStart")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "onResume")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d(TAG, "onPause")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d(TAG, "onStop")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "onDestroy")
+    }
+}
