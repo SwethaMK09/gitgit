@@ -1,0 +1,161 @@
+// MainActivity.kt
+package com.example.mediaplayer1
+
+import android.content.Intent
+import android.media.MediaPlayer
+import android.os.Bundle
+import android.widget.Button
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import com.example.mediaplayer1.ui.theme.MediaPlayer1Theme
+
+class MainActivity : ComponentActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // Set the initial layout
+        setContentView(R.layout.activity_main)
+
+        // create an instance of media player for audio playback
+        val mediaPlayer: MediaPlayer = MediaPlayer.create(applicationContext, R.raw.music1)
+
+        val bPlay: Button = findViewById(R.id.playButton)
+        val bPause: Button = findViewById(R.id.pauseButton)
+        val bStop: Button = findViewById(R.id.stopButton)
+        val getStartedButton: Button = findViewById(R.id.getStartedButton)
+
+        bPlay.setOnClickListener {
+            mediaPlayer.start()
+        }
+
+        bPause.setOnClickListener {
+            mediaPlayer.pause()
+        }
+
+        bStop.setOnClickListener {
+            mediaPlayer.stop()
+            mediaPlayer.prepare()
+        }
+
+        getStartedButton.setOnClickListener {
+            // Navigate to the playlist activity
+            val intent = Intent(this, PlaylistActivity::class.java)
+            startActivity(intent)
+        }
+    }
+}
+
+
+
+// PlaylistActivity.kt
+package com.example.mediaplayer1
+
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+
+class PlaylistActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Set the content view to your playlist layout file (e.g., activity_playlist.xml)
+        setContentView(R.layout.activity_playlist)
+    }
+}
+
+
+
+<!-- activity_main.xml -->
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    tools:ignore="HardcodedText">
+
+    <TextView
+        android:id="@+id/headingText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="32dp"
+        android:text="MEDIA PLAYER"
+        android:textSize="28sp"
+        android:textStyle="bold" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/headingText"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/img" />
+
+    <Button
+        android:id="@+id/getStartedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ImageViewId" <!-- Replace ImageViewId with the actual ID of your ImageView -->
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:text="GET STARTED"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        android:backgroundTint="@color/white" />
+
+</RelativeLayout>
+
+
+
+<!-- activity_playlist.xml -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- Music Item 1 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Music 1" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PLAY"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            android:backgroundTint="@color/white" />
+    </LinearLayout>
+
+    <!-- Music Item 2 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Music 2" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PLAY"
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            android:backgroundTint="@color/white" />
+    </LinearLayout>
+
+</LinearLayout>
