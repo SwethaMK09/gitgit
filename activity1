@@ -1,0 +1,25 @@
+Custom Android Emulator
+Implement custom hardware profiles in the AVD Manager.
+Create emulator instances with unique specifications (screen size, RAM, CPU).
+Test app responsiveness on various virtual devices.
+ 
+Android App Localization
+Localize an Android app for multiple languages to cater to a global audience.
+Implement language-specific resource files for strings, layouts, and images.
+Use the Locale class to dynamically switch between languages.
+Test the app on emulators with different language settings.
+ 
+SecureNote - Encrypted Note-Taking App
+Implement user authentication and authorization.
+Encrypt and decrypt note content using cryptographic algorithms.
+Store encrypted notes securely on the device.
+ 
+Android System Monitor
+Utilize Android's system APIs to gather CPU usage, memory stats, and battery status.
+Display information using graphical elements and charts.
+Implement notifications for critical system events.
+ 
+Android Device Information App
+Retrieve device details such as model, OS version, screen resolution, etc.
+Display hardware information and available sensors.
+Allow users to share device information.
