@@ -421,3 +421,54 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(location))
     }
 }
+
+
+
+ddd
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+import com.example.myapplication.ui.theme.MyApplicationTheme
+
+class MainActivity : ComponentActivity(), OnMapReadyCallback {
+
+    private lateinit var mapView: MapView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setContent {
+            MyApplicationTheme {
+                // A surface container using the 'background' color from the theme
+                mapView = MapView(this)
+                mapView.getMapAsync(this)
+
+                // You can add more Compose UI elements here if needed
+            }
+        }
+    }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+        // Add a marker at a location of your choice and move the camera
+        val location = LatLng(-34.0, 151.0) // Replace with your desired coordinates
+        googleMap.addMarker(MarkerOptions().position(location).title("Marker"))
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(location))
+    }
+}
+
+
+js
+dependencies {
+    // ... other dependencies
+
+    implementation 'androidx.activity:activity-compose:1.3.0-alpha08'
+    implementation 'com.google.android.gms:play-services-maps:17.0.1'
+}
