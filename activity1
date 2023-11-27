@@ -161,3 +161,42 @@ class MainActivity : AppCompatActivity() {
     <string name="welcome_message">¡Bienvenido a nuestra aplicación!</string>
     <string name="settings">Ajustes</string>
 </resources>
+nskkss
+
+
+class MainActivity : AppCompatActivity() {
+
+    private var currentLocale: Locale = Locale.getDefault()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        updateAppLanguage(currentLocale)
+
+        val languageRadioGroup = findViewById<RadioGroup>(R.id.language_radio_group)
+        languageRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+            val radioButton = languageRadioGroup.findViewById<RadioButton>(checkedId)
+            val selectedLanguage = radioButton.text.toString()
+
+            val newLocale = Locale(selectedLanguage)
+            if (newLocale != currentLocale) {
+                updateAppLanguage(newLocale)
+                currentLocale = newLocale
+                recreate() // Recreate the activity to apply the new locale
+            }
+        }
+    }
+
+    private fun updateAppLanguage(locale: Locale) {
+        val resources = resources
+        val configuration = resources.configuration
+        configuration.setLocale(locale)
+        resources.updateConfiguration(configuration, resources.displayMetrics)
+
+        // Update UI elements based on the new locale
+        val welcomeText = getString(R.string.welcome_message)
+        val textView = findViewById<TextView>(R.id.welcome_text)
+        textView.text = welcomeText
+    }
+}
