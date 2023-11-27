@@ -1,0 +1,121 @@
+Main Activity:
+package com.example.encryptednote
+
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+
+class MainActivity : AppCompatActivity() {
+    private lateinit var inputText: EditText
+    private lateinit var resultText: TextView
+    private lateinit var secretKey: SecretKey
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        inputText = findViewById(R.id.inputText)
+        resultText = findViewById(R.id.resultText)
+        val encryptButton: Button = findViewById(R.id.encryptButton)
+        val decryptButton: Button = findViewById(R.id.decryptButton)
+
+        encryptButton.setOnClickListener {
+            val data = inputText.text.toString()
+            secretKey = generateKey()
+            val encryptedData = encrypt(data, secretKey)
+            resultText.text = "Encrypted: ${ByteArrayToHexString(encryptedData)}"
+        }
+
+        decryptButton.setOnClickListener {
+            val encryptedDataHex = inputText.text.toString()
+            val encryptedData = HexStringToByteArray(encryptedDataHex)
+            val decryptedData = decrypt(encryptedData, secretKey)
+            resultText.text = "Decrypted: $decryptedData"
+        }
+    }
+
+    private fun generateKey(): SecretKey {
+        val keyGenerator = KeyGenerator.getInstance("AES")
+        return keyGenerator.generateKey()
+    }
+
+    private fun encrypt(data: String, secretKey: SecretKey): ByteArray {
+        val cipher = Cipher.getInstance("AES")
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+        return cipher.doFinal(data.toByteArray())
+    }
+
+    private fun decrypt(encryptedData: ByteArray, secretKey: SecretKey): String {
+        val cipher = Cipher.getInstance("AES")
+        cipher.init(Cipher.DECRYPT_MODE, secretKey)
+        val decryptedData = cipher.doFinal(encryptedData)
+        return String(decryptedData)
+    }
+
+    private fun ByteArrayToHexString(bytes: ByteArray): String {
+        val hexChars = CharArray(bytes.size * 2)
+        for (i in bytes.indices) {
+            val v = bytes[i].toInt() and 0xFF
+            hexChars[i * 2] = "0123456789ABCDEF"[v ushr 4]
+            hexChars[i * 2 + 1] = "0123456789ABCDEF"[v and 0x0F]
+        }
+        return String(hexChars)
+    }
+
+    private fun HexStringToByteArray(hexString: String): ByteArray {
+        val len = hexString.length
+        val data = ByteArray(len / 2)
+        var i = 0
+        while (i < len) {
+            data[i / 2] = ((Character.digit(hexString[i], 16) shl 4) + Character.digit(hexString[i + 1], 16)).toByte()
+            i += 2
+        }
+        return data
+    }
+}
+
+
+activity_main.xml:
+
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <EditText
+        android:id="@+id/inputText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="90dp"
+        android:hint="Enter text" />
+
+    <Button
+        android:id="@+id/encryptButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/inputText"
+        android:layout_marginTop="123dp"
+        android:text="Encrypt" />
+
+    <Button
+        android:id="@+id/decryptButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/encryptButton"
+        android:layout_marginTop="0dp"
+        android:text="Decrypt" />
+
+    <EditText
+        android:id="@+id/resultText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/decryptButton"
+        android:layout_marginTop="76dp"
+        android:paddingTop="20dp" />
+</RelativeLayout>
