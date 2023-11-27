@@ -85,3 +85,8 @@ class MainActivity : AppCompatActivity() {
     <!-- Add other UI elements as needed -->
 
 </RelativeLayout>
+
+
+
+
+https://github.com/MostafaTaghipour/LocaleManager
