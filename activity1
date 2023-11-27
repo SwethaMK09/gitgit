@@ -90,3 +90,74 @@ class MainActivity : AppCompatActivity() {
 
 
 https://github.com/MostafaTaghipour/LocaleManager
+nhabsns
+
+
+
+class MainActivity : AppCompatActivity() {
+
+    private val localeHelper by lazy { LocaleHelper(this) }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val welcomeText = localeHelper.getLocalizedResource("welcome_message")
+        val textView = findViewById<TextView>(R.id.welcome_text)
+        textView.text = welcomeText
+
+        val settingsButton = findViewById<Button>(R.id.settings_button)
+        settingsButton.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+    }
+}
+
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/welcome_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/welcome_message" />
+
+    <Button
+        android:id="@+id/settings_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/settings" />
+
+</LinearLayout>
+
+
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_message">Welcome to our app!</string>
+    <string name="settings">Settings</string>
+</resources>
+
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_message">Bienvenue dans notre application!</string>
+    <string name="settings">Paramètres</string>
+</resources>
+
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_message">¡Bienvenido a nuestra aplicación!</string>
+    <string name="settings">Ajustes</string>
+</resources>
