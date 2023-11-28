@@ -165,3 +165,39 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
+
+
+
+
+This Android app, named "EncryptedNote," allows users to encrypt and decrypt text using the AES encryption algorithm. Here's a breakdown of the code:
+
+1. **Layout Setup:**
+   - The layout is defined in an XML file (probably `res/layout/activity_main.xml`).
+   - It includes an `EditText` for input, a `TextView` to display results, and two `Button`s for encryption and decryption.
+
+2. **Variable Initialization:**
+   - The `MainActivity` class extends `AppCompatActivity`.
+   - Three private variables are declared: `inputText` (EditText), `resultText` (TextView), and `secretKey` (SecretKey).
+
+3. **onCreate Method:**
+   - Initializes the layout using `setContentView`.
+   - Retrieves references to UI elements (EditText, TextView, Buttons).
+   - Sets up click listeners for the "Encrypt" and "Decrypt" buttons.
+
+4. **Encrypt Button Click Listener:**
+   - When the "Encrypt" button is clicked, it reads the input text, generates a secret key, encrypts the input data using AES, and displays the encrypted result in the TextView.
+
+5. **Decrypt Button Click Listener:**
+   - When the "Decrypt" button is clicked, it reads the input (assumed to be a hex-encoded encrypted string), converts it to a byte array, decrypts using the AES algorithm, and displays the decrypted result in the TextView.
+
+6. **Key Generation:**
+   - The `generateKey` function initializes a KeyGenerator for AES and generates a new secret key.
+
+7. **Encryption and Decryption Functions:**
+   - `encrypt` and `decrypt` functions use the AES cipher to perform encryption and decryption, respectively.
+
+8. **Hex Conversion Functions:**
+   - `ByteArrayToHexString` converts a byte array to a hex-encoded string.
+   - `HexStringToByteArray` converts a hex-encoded string to a byte array.
+
+The app follows a basic flow: input text, encrypt, display result; or input encrypted text, decrypt, display result. It uses the AES algorithm for encryption and decryption, and it converts byte arrays to hex strings for display and input purposes.
