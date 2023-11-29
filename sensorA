@@ -1,193 +1,111 @@
-package com.example.accelerometersensor
-import android.annotation.SuppressLint
-import android.graphics.Color
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatDelegate
-
-class MainActivity : AppCompatActivity(), SensorEventListener {
-
-    private lateinit var sensorManager: SensorManager
-    private lateinit var square: TextView
-
-    @SuppressLint("MissingInflatedId")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        // Keeps phone in light mode
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-
-        square = findViewById(R.id.tv_square)
-
-        setUpSensorStuff()
-    }
-
-    private fun setUpSensorStuff() {
-        // Create the sensor manager
-        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-
-        // Specify the sensor you want to listen to
-        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also { accelerometer ->
-            sensorManager.registerListener(
-                this,
-                accelerometer,
-                SensorManager.SENSOR_DELAY_FASTEST,
-                SensorManager.SENSOR_DELAY_FASTEST
-            )
-        }
-    }
-
-    override fun onSensorChanged(event: SensorEvent?) {
-        // Checks for the sensor we have registered
-        if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
-            //Log.d("Main", "onSensorChanged: sides ${event.values[0]} front/back ${event.values[1]} ")
-
-            // Sides = Tilting phone left(10) and right(-10)
-            val sides = event.values[0]
-
-            // Up/Down = Tilting phone up(10), flat (0), upside-down(-10)
-            val upDown = event.values[1]
-
-            square.apply {
-                rotationX = upDown * 3f
-                rotationY = sides * 3f
-                rotation = -sides
-                translationX = sides * -10
-                translationY = upDown * 10
-            }
-
-            // Changes the colour of the square if it's completely flat
-            val color = if (upDown.toInt() == 0 && sides.toInt() == 0) Color.GREEN else Color.RED
-            square.setBackgroundColor(color)
-
-            square.text = "up/down ${upDown.toInt()}\nleft/right ${sides.toInt()}"
-        }
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        return
-    }
-
-    override fun onDestroy() {
-        sensorManager.unregisterListener(this)
-        super.onDestroy()
-    }
-}
-
-
-
-
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#212121"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/tv_square"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_centerInParent="true"
-        android:background="#EF5350"
-        android:gravity="center"
-        android:text="Hello"
-        android:textColor="@color/white"
-        android:textSize="20sp" />
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="271dp"
+        android:layout_height="412dp"
+        android:layout_marginStart="70dp"
+        android:layout_marginTop="49dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/pointer"
+        android:contentDescription="@string/todo" />
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="160dp"
+        android:layout_marginTop="28dp"
+        android:onClick="ResetButton"
+        android:text="@string/reset"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+</androidx.constraintlayout.widget.ConstraintLayout>
 
 
-</RelativeLayout>
 
 
-dhshs
+package com.example.mycompassapp;
 
+import androidx.appcompat.app.AppCompatActivity;
 
-package com.example.accelerometersensor
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
 
-import android.annotation.SuppressLint
-import android.graphics.Color
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
-import android.os.Bundle
-import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
+public class MainActivity extends AppCompatActivity {
 
-class MainActivity : AppCompatActivity(), SensorEventListener {
+    private ImageView imageView;
 
-    private lateinit var sensorManager: SensorManager
-    private lateinit var square: TextView
+    private SensorManager sensorManager;
+    private Sensor sensorAccelerometer;
+    private Sensor sensorMagneticField;
 
-    @SuppressLint("MissingInflatedId")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+    private float[] floatGravity = new float[3];
+    private float[] floatGeoMagnetic = new float[3];
 
-        // Keeps phone in light mode
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+    private float[] floatOrientation = new float[3];
+    private float[] floatRotationMatrix = new float[9];
 
-        square = findViewById(R.id.tv_square)
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-        setUpSensorStuff()
+        imageView = findViewById(R.id.imageView);
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+        sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorMagneticField = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+
+        SensorEventListener sensorEventListenerAccelrometer = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                floatGravity = event.values;
+
+                SensorManager.getRotationMatrix(floatRotationMatrix, null, floatGravity, floatGeoMagnetic);
+                SensorManager.getOrientation(floatRotationMatrix, floatOrientation);
+
+                imageView.setRotation((float) (-floatOrientation[0]*180/3.14159));
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            }
+        };
+
+        SensorEventListener sensorEventListenerMagneticField = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                floatGeoMagnetic = event.values;
+
+                SensorManager.getRotationMatrix(floatRotationMatrix, null, floatGravity, floatGeoMagnetic);
+                SensorManager.getOrientation(floatRotationMatrix, floatOrientation);
+
+                imageView.setRotation((float) (-floatOrientation[0]*180/3.14159));
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            }
+        };
+        sensorManager.registerListener(sensorEventListenerAccelrometer, sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(sensorEventListenerMagneticField, sensorMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
-    private fun setUpSensorStuff() {
-        // Create the sensor manager
-        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-
-        // Specify the sensor you want to listen to
-        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also { accelerometer ->
-            sensorManager.registerListener(
-                this,
-                accelerometer,
-                SensorManager.SENSOR_DELAY_FASTEST
-            )
-        }
-    }
-
-    override fun onSensorChanged(event: SensorEvent?) {
-        if (event == null || event.sensor?.type != Sensor.TYPE_ACCELEROMETER) {
-            return
-        }
-
-        // Sides = Tilting phone left(10) and right(-10)
-        val sides = event.values[0]
-
-        // Up/Down = Tilting phone up(10), flat (0), upside-down(-10)
-        val upDown = event.values[1]
-
-        square.apply {
-            rotationX = upDown * 3f
-            rotationY = sides * 3f
-            rotation = -sides
-            translationX = sides * -10
-            translationY = upDown * 10
-        }
-
-        // Changes the color of the square if it's completely flat
-        val color = if (upDown.toInt() == 0 && sides.toInt() == 0) Color.GREEN else Color.RED
-        square.setBackgroundColor(color)
-
-        square.text = "up/down ${upDown.toInt()}\nleft/right ${sides.toInt()}"
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // No action needed for this example
-    }
-
-    override fun onDestroy() {
-        sensorManager.unregisterListener(this)
-        super.onDestroy()
+    public void ResetButton(View view){
+        imageView.setRotation(180);
     }
 }
-
