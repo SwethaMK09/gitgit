@@ -23,7 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="160dp"
         android:layout_marginTop="28dp"
-        android:onClick="ResetButton"
+        android:onClick="resetButton"
         android:text="@string/reset"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView" />
@@ -31,81 +31,85 @@
 
 
 
+package com.example.mycompassapp
 
-package com.example.mycompassapp;
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.os.Bundle
+import android.view.View
+import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
 
-import androidx.appcompat.app.AppCompatActivity;
+class MainActivity : AppCompatActivity() {
 
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.ImageView;
+    private lateinit var imageView: ImageView
+    private lateinit var sensorManager: SensorManager
+    private lateinit var sensorAccelerometer: Sensor
+    private lateinit var sensorMagneticField: Sensor
 
-public class MainActivity extends AppCompatActivity {
+    private val floatGravity = FloatArray(3)
+    private val floatGeoMagnetic = FloatArray(3)
+    private val floatOrientation = FloatArray(3)
+    private val floatRotationMatrix = FloatArray(9)
 
-    private ImageView imageView;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-    private SensorManager sensorManager;
-    private Sensor sensorAccelerometer;
-    private Sensor sensorMagneticField;
+        imageView = findViewById(R.id.imageView)
 
-    private float[] floatGravity = new float[3];
-    private float[] floatGeoMagnetic = new float[3];
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
 
-    private float[] floatOrientation = new float[3];
-    private float[] floatRotationMatrix = new float[9];
+        sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        sensorMagneticField = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        val sensorEventListenerAccelerometer = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                floatGravity[0] = event.values[0]
+                floatGravity[1] = event.values[1]
+                floatGravity[2] = event.values[2]
 
-        imageView = findViewById(R.id.imageView);
+                SensorManager.getRotationMatrix(floatRotationMatrix, null, floatGravity, floatGeoMagnetic)
+                SensorManager.getOrientation(floatRotationMatrix, floatOrientation)
 
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-
-        sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorMagneticField = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
-
-        SensorEventListener sensorEventListenerAccelrometer = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                floatGravity = event.values;
-
-                SensorManager.getRotationMatrix(floatRotationMatrix, null, floatGravity, floatGeoMagnetic);
-                SensorManager.getOrientation(floatRotationMatrix, floatOrientation);
-
-                imageView.setRotation((float) (-floatOrientation[0]*180/3.14159));
+                imageView.rotation = (-floatOrientation[0] * 180 / 3.14159).toFloat()
             }
 
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
             }
-        };
+        }
 
-        SensorEventListener sensorEventListenerMagneticField = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                floatGeoMagnetic = event.values;
+        val sensorEventListenerMagneticField = object : SensorEventListener {
+            override fun onSensorChanged(event: SensorEvent) {
+                floatGeoMagnetic[0] = event.values[0]
+                floatGeoMagnetic[1] = event.values[1]
+                floatGeoMagnetic[2] = event.values[2]
 
-                SensorManager.getRotationMatrix(floatRotationMatrix, null, floatGravity, floatGeoMagnetic);
-                SensorManager.getOrientation(floatRotationMatrix, floatOrientation);
+                SensorManager.getRotationMatrix(floatRotationMatrix, null, floatGravity, floatGeoMagnetic)
+                SensorManager.getOrientation(floatRotationMatrix, floatOrientation)
 
-                imageView.setRotation((float) (-floatOrientation[0]*180/3.14159));
+                imageView.rotation = (-floatOrientation[0] * 180 / 3.14159).toFloat()
             }
 
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
             }
-        };
-        sensorManager.registerListener(sensorEventListenerAccelrometer, sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(sensorEventListenerMagneticField, sensorMagneticField, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+        sensorManager.registerListener(
+            sensorEventListenerAccelerometer,
+            sensorAccelerometer,
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
+        sensorManager.registerListener(
+            sensorEventListenerMagneticField,
+            sensorMagneticField,
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
     }
 
-    public void ResetButton(View view){
-        imageView.setRotation(180);
+    fun resetButton(view: View) {
+        imageView.rotation = 180f
     }
 }
