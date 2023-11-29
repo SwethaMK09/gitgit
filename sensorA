@@ -1,21 +1,77 @@
-val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-val sensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 
+class MainActivity : AppCompatActivity(), SensorEventListener {
 
-override fun onSensorChanged(event: SensorEvent) {
-    // In this example, alpha is calculated as t / (t + dT),
-    // where t is the low-pass filter's time-constant and
-    // dT is the event delivery rate.
+    private lateinit var sensorManager: SensorManager
+    private var sensor: Sensor? = null
+    private val gravity = FloatArray(3)
+    private val linear_acceleration = FloatArray(3)
 
-    val alpha: Float = 0.8f
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-    // Isolate the force of gravity with the low-pass filter.
-    gravity[0] = alpha * gravity[0] + (1 - alpha) * event.values[0]
-    gravity[1] = alpha * gravity[1] + (1 - alpha) * event.values[1]
-    gravity[2] = alpha * gravity[2] + (1 - alpha) * event.values[2]
+        // Initialize SensorManager and accelerometer sensor
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
-    // Remove the gravity contribution with the high-pass filter.
-    linear_acceleration[0] = event.values[0] - gravity[0]
-    linear_acceleration[1] = event.values[1] - gravity[1]
-    linear_acceleration[2] = event.values[2] - gravity[2]
+        // Register the sensor listener
+        sensor?.let {
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
+        }
+    }
+
+    override fun onSensorChanged(event: SensorEvent) {
+        val alpha: Float = 0.8f
+
+        gravity[0] = alpha * gravity[0] + (1 - alpha) * event.values[0]
+        gravity[1] = alpha * gravity[1] + (1 - alpha) * event.values[1]
+        gravity[2] = alpha * gravity[2] + (1 - alpha) * event.values[2]
+
+        linear_acceleration[0] = event.values[0] - gravity[0]
+        linear_acceleration[1] = event.values[1] - gravity[1]
+        linear_acceleration[2] = event.values[2] - gravity[2]
+
+        // Add your custom logic here based on the linear acceleration values
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // Not used in this example
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Unregister the sensor listener when the activity is destroyed
+        sensor?.let {
+            sensorManager.unregisterListener(this, it)
+        }
+    }
 }
+
+
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <!-- TextView to display accelerometer values -->
+    <TextView
+        android:id="@+id/accelerationValues"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Linear Acceleration: X = 0.0, Y = 0.0, Z = 0.0"
+        android:layout_centerInParent="true"/>
+
+    <!-- Add more UI elements as needed -->
+
+</RelativeLayout>
