@@ -1,123 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
-
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="271dp"
-        android:layout_height="412dp"
-        android:layout_marginStart="70dp"
-        android:layout_marginTop="49dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/pointer"
-        android:contentDescription="@string/todo" />
-
-    <Button
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="160dp"
-        android:layout_marginTop="28dp"
-        android:onClick="resetButton"
-        android:text="@string/reset"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+val sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+val sensor: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
 
+override fun onSensorChanged(event: SensorEvent) {
+    // In this example, alpha is calculated as t / (t + dT),
+    // where t is the low-pass filter's time-constant and
+    // dT is the event delivery rate.
 
-package com.example.mycompassapp
+    val alpha: Float = 0.8f
 
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
-import android.os.Bundle
-import android.view.View
-import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
+    // Isolate the force of gravity with the low-pass filter.
+    gravity[0] = alpha * gravity[0] + (1 - alpha) * event.values[0]
+    gravity[1] = alpha * gravity[1] + (1 - alpha) * event.values[1]
+    gravity[2] = alpha * gravity[2] + (1 - alpha) * event.values[2]
 
-class MainActivity : AppCompatActivity() {
-
-    private lateinit var imageView: ImageView
-    private lateinit var sensorManager: SensorManager
-    private lateinit var sensorAccelerometer: Sensor
-    private lateinit var sensorMagneticField: Sensor
-
-    private val floatGravity = FloatArray(3)
-    private val floatGeoMagnetic = FloatArray(3)
-    private val floatOrientation = FloatArray(3)
-    private val floatRotationMatrix = FloatArray(9)
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        imageView = findViewById(R.id.imageView)
-
-        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-
-        sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        sensorMagneticField = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
-
-        val sensorEventListenerAccelerometer = object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent) {
-                floatGravity[0] = event.values[0]
-                floatGravity[1] = event.values[1]
-                floatGravity[2] = event.values[2]
-
-                SensorManager.getRotationMatrix(floatRotationMatrix, null, floatGravity, floatGeoMagnetic)
-                SensorManager.getOrientation(floatRotationMatrix, floatOrientation)
-
-                imageView.rotation = (-floatOrientation[0] * 180 / 3.14159).toFloat()
-            }
-
-            override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
-            }
-        }
-
-        val sensorEventListenerMagneticField = object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent) {
-                floatGeoMagnetic[0] = event.values[0]
-                floatGeoMagnetic[1] = event.values[1]
-                floatGeoMagnetic[2] = event.values[2]
-
-                SensorManager.getRotationMatrix(floatRotationMatrix, null, floatGravity, floatGeoMagnetic)
-                SensorManager.getOrientation(floatRotationMatrix, floatOrientation)
-
-                imageView.rotation = (-floatOrientation[0] * 180 / 3.14159).toFloat()
-            }
-
-            override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {
-            }
-        }
-
-        sensorManager.registerListener(
-            sensorEventListenerAccelerometer,
-            sensorAccelerometer,
-            SensorManager.SENSOR_DELAY_NORMAL
-        )
-        sensorManager.registerListener(
-            sensorEventListenerMagneticField,
-            sensorMagneticField,
-            SensorManager.SENSOR_DELAY_NORMAL
-        )
-    }
-
-    fun resetButton(view: View) {
-        imageView.rotation = 180f
-    }
+    // Remove the gravity contribution with the high-pass filter.
+    linear_acceleration[0] = event.values[0] - gravity[0]
+    linear_acceleration[1] = event.values[1] - gravity[1]
+    linear_acceleration[2] = event.values[2] - gravity[2]
 }
-
-
-
-https://github.com/topics/video-call?l=kotlin
-
-
-
-https://github.com/topics/video-conferencing?l=kotlin
