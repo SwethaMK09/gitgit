@@ -1,3 +1,43 @@
+mainactivity.kt:
+
+package com.example.videopictureinpicture
+
+import android.app.PendingIntent
+import android.app.PictureInPictureParams
+import android.app.RemoteAction
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Rect
+import android.graphics.drawable.Icon
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.util.Rational
+import android.widget.VideoView
+import androidx.activity.ComponentActivity
+
+class MainActivity : ComponentActivity() {
+
+    class MyReceiver: BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent?) {
+            println("Clicked on PIP action")
+        }
+    }
+
+    private val isPipSupported by lazy {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            packageManager.hasSystemFeature(
+                PackageManager.FEATURE_PICTURE_IN_PICTURE
+            )
+        } else {
+            false
+        }
+    }
+
+    private var videoViewBounds = Rect()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -18,3 +58,126 @@
             }
         }
     }
+
+    private fun updatedPipParams(): PictureInPictureParams? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            PictureInPictureParams.Builder()
+                .setSourceRectHint(videoViewBounds)
+                .setAspectRatio(Rational(16, 9))
+                .setActions(
+                    listOf(
+                        RemoteAction(
+                            Icon.createWithResource(
+                                applicationContext,
+                                R.drawable.baseline_picture_in_picture_alt_24
+                            ),
+                            "Baby changing station",
+                            "Baby changing station",
+                            PendingIntent.getBroadcast(
+                                applicationContext,
+                                0,
+                                Intent(applicationContext, MyReceiver::class.java),
+                                PendingIntent.FLAG_IMMUTABLE
+                            )
+                        )
+                    )
+                )
+                .build()
+        } else null
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        if(!isPipSupported) {
+            return
+        }
+        updatedPipParams()?.let { params ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                enterPictureInPictureMode(params)
+            }
+        }
+    }
+}
+
+
+manifest:
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.VIdeoPictureInPicture"
+        tools:targetApi="31">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:launchMode="singleTask"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
+
+
+build gradle:
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+
+android {
+    namespace = "com.example.videopictureinpicture"
+    compileSdk = 34
+
+    defaultConfig {
+        applicationId = "com.example.videopictureinpicture"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+dependencies {
+
+    implementation("androidx.core:core-ktx:1.9.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.10.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+}
