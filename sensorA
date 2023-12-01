@@ -1,5 +1,5 @@
 can you delete the unnecessary codes and simplify the code. also the video is playing from VideoActivity i want it comming from another layout activity- activity_video.xml
-
+which also has play pause and stop button. also if i turn the device the app should also rotate like i want it landscape
 MainActivity.kt:
 package com.example.pictureinpicturemode
 
