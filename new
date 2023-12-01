@@ -1,66 +1,139 @@
-<?xml version="1.0" encoding="utf-8"?>
+// VideoActivity.kt
+package com.example.pictureinpicturemode
+
+import android.net.Uri
+import android.os.Bundle
+import android.view.View
+import android.widget.Button
+import android.widget.MediaController
+import android.widget.VideoView
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.viewinterop.AndroidView
+
+class VideoActivity : ComponentActivity() {
+
+    private lateinit var videoView: VideoView
+    private lateinit var mediaController: MediaController
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setContent {
+            AndroidView(
+                factory = { context ->
+                    createVideoView(context)
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+
+    private fun createVideoView(context: android.content.Context): View {
+        val rootView = layoutInflater.inflate(R.layout.activity_video, null)
+        videoView = rootView.findViewById(R.id.videoView)
+        mediaController = rootView.findViewById(R.id.mediaController)
+
+        videoView.apply {
+            layoutParams = android.view.ViewGroup.LayoutParams(
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                android.view.ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            setVideoURI(Uri.parse("android.resource://$packageName/${R.raw.sample}"))
+            setMediaController(mediaController)
+            start()
+        }
+
+        val playButton: Button = rootView.findViewById(R.id.playButton)
+        val pauseButton: Button = rootView.findViewById(R.id.pauseButton)
+        val stopButton: Button = rootView.findViewById(R.id.stopButton)
+
+        playButton.setOnClickListener {
+            videoView.start()
+        }
+
+        pauseButton.setOnClickListener {
+            videoView.pause()
+        }
+
+        stopButton.setOnClickListener {
+            videoView.stopPlayback()
+            videoView.resume()
+        }
+
+        rootView.findViewById<View>(R.id.mediaController)
+            .setOnClickListener {
+                // Show/hide media controller on click
+                mediaController.show()
+            }
+
+        rootView.findViewById<View>(R.id.videoView)
+            .setOnClickListener {
+                // Show/hide media controller on video view click
+                mediaController.show()
+            }
+
+        return rootView
+    }
+
+    override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
+        enterPictureInPictureMode()
+    }
+}
+
+
+
+
+
+<!-- res/layout/activity_video.xml -->
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity"
-    tools:ignore="HardcodedText">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/headingText"
+    <VideoView
+        android:id="@+id/videoView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <MediaController
+        android:id="@+id/mediaController"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"/>
+
+    <Button
+        android:id="@+id/playButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="32dp"
-        android:text="MEDIA PLAYER"
-        android:textSize="18sp"
-        android:textStyle="bold" />
-
-    <ImageView
-        android:id="@+id/mediaImage"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/headingText"
+        android:text="Play"
+        android:layout_below="@id/mediaController"
         android:layout_marginTop="16dp"
-        android:src="@drawable/your_image" />
+        android:layout_marginStart="16dp"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/pauseButton"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/mediaImage"
+        android:text="Pause"
+        android:layout_below="@id/mediaController"
         android:layout_marginTop="16dp"
-        android:gravity="center_horizontal">
+        android:layout_toEndOf="@id/playButton"
+        android:layout_marginStart="16dp"/>
 
-        <Button
-            android:id="@+id/playButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="PLAY"
-            android:textColor="@android:color/black"
-            android:textStyle="bold"
-            android:backgroundTint="@color/white" />
-
-        <Button
-            android:id="@+id/pauseButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="PAUSE"
-            android:textColor="@android:color/black"
-            android:textStyle="bold"
-            android:backgroundTint="@color/white"/>
-
-        <Button
-            android:id="@+id/stopButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="STOP"
-            android:textColor="@android:color/black"
-            android:textStyle="bold"
-            android:backgroundTint="@color/white" />
-
-    </LinearLayout>
-
+    <Button
+        android:id="@+id/stopButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Stop"
+        android:layout_below="@id/mediaController"
+        android:layout_marginTop="16dp"
+        android:layout_toEndOf="@id/pauseButton"
+        android:layout_marginStart="16dp"/>
 </RelativeLayout>
