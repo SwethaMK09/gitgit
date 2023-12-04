@@ -1,74 +1,30 @@
-can you delete the unnecessary codes and simplify the code. also the video is playing from VideoActivity i want it comming from another layout activity- activity_video.xml
-which also has play pause and stop button. also if i turn the device the app should also rotate like i want it landscape
-MainActivity.kt:
 package com.example.pictureinpicturemode
 
-import android.annotation.SuppressLint
-import android.content.Intent
-import android.os.Bundle
-import android.widget.Button
-import androidx.activity.ComponentActivity
-
-
-class MainActivity : ComponentActivity() {
-    @SuppressLint("MissingInflatedId")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        val getStartedButton: Button = findViewById(R.id.getStartedButton)
-
-        getStartedButton.setOnClickListener {
-            val intent = Intent(this, VideoActivity::class.java)
-            startActivity(intent)
-        }
-    }
-}
-
-VideoActivity.ky:
-package com.example.pictureinpicturemode
-
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.ui.Modifier
-import com.example.pictureinpicturemode.ui.theme.PictureInPictureModeTheme
-import android.app.PendingIntent
 import android.app.PictureInPictureParams
-import android.app.RemoteAction
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Rect
-import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.util.Rational
-import android.widget.Button
 import android.widget.VideoView
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toAndroidRect
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.pictureinpicturemode.ui.theme.PictureInPictureModeTheme
 
 class VideoActivity : ComponentActivity() {
 
-    class MyReceiver: BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent?) {
-            println("Clicked on PIP action")
-        }
-    }
-
     private val isPipSupported by lazy {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            packageManager.hasSystemFeature(
-                PackageManager.FEATURE_PICTURE_IN_PICTURE
-            )
-        } else {
-            false
-        }
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
+                packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
     }
 
     private var videoViewBounds = Rect()
@@ -78,7 +34,6 @@ class VideoActivity : ComponentActivity() {
 
         setContent {
             PictureInPictureModeTheme {
-                // A surface container using the 'background' color from the theme
                 AndroidView(
                     factory = {
                         VideoView(it, null).apply {
@@ -101,108 +56,18 @@ class VideoActivity : ComponentActivity() {
             PictureInPictureParams.Builder()
                 .setSourceRectHint(videoViewBounds)
                 .setAspectRatio(Rational(16, 9))
-                .setActions(
-                    listOf(
-                        RemoteAction(
-                            Icon.createWithResource(
-                                applicationContext,
-                                R.drawable.baseline_picture_in_picture_alt_24
-                            ),
-                            "Baby changing station",
-                            "Baby changing station",
-                            PendingIntent.getBroadcast(
-                                applicationContext,
-                                0,
-                                Intent(applicationContext, MyReceiver::class.java),
-                                PendingIntent.FLAG_IMMUTABLE
-                            )
-                        )
-                    )
-                )
                 .build()
         } else null
     }
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        if(!isPipSupported) {
-            return
-        }
-        updatedPipParams()?.let { params ->
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                enterPictureInPictureMode(params)
+        if (isPipSupported) {
+            updatedPipParams()?.let { params ->
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    enterPictureInPictureMode(params)
+                }
             }
         }
     }
 }
-
-baseline_picture_in_picture_alt_24.xml:
-<vector android:height="24dp" android:tint="#EFEAEA"
-    android:viewportHeight="24" android:viewportWidth="24"
-    android:width="24dp" xmlns:android="http://schemas.android.com/apk/res/android">
-    <path android:fillColor="@android:color/white" android:pathData="M19,11h-8v6h8v-6zM23,19L23,4.98C23,3.88 22.1,3 21,3L3,3c-1.1,0 -2,0.88 -2,1.98L1,19c0,1.1 0.9,2 2,2h18c1.1,0 2,-0.9 2,-2zM21,19.02L3,19.02L3,4.97h18v14.05z"/>
-</vector>
-
-Android Manifest:
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
-
-    <application
-        android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.PictureInPictureMode"
-        tools:targetApi="31">
-        <activity
-            android:name=".VideoActivity"
-            android:exported="false"
-            android:label="@string/title_activity_video"
-            android:theme="@style/Theme.PictureInPictureMode"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:launchMode="singleTask"
-            android:resizeableActivity="true"
-            android:supportsPictureInPicture="true" />
-
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name"
-            android:theme="@style/Theme.PictureInPictureMode">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
-
-</manifest>
-
-
-activity_main:
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity"
-    tools:ignore="HardcodedText"
-    android:background="@android:color/holo_orange_light">
-
-    <Button
-        android:id="@+id/getStartedButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginVertical="600dp"
-        android:text="GET STARTED"
-        android:textColor="@android:color/black"
-        android:textStyle="bold"
-        android:backgroundTint="@color/white" />
-
-</RelativeLayout>
