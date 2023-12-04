@@ -1,102 +1,52 @@
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity"
-    tools:ignore="HardcodedText">
-
-
-    <TextView
-        android:id="@+id/headingText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="32dp"
-        android:text="MEDIA PLAYER"
-        android:textSize="28sp"
-        android:textStyle="bold" />
-
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/img" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/headingText"
-        android:layout_marginVertical="500dp"
-        android:gravity="center_horizontal">
-
-        <Button
-            android:id="@+id/playButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="PLAY"
-            android:textColor="@android:color/black"
-            android:textStyle="bold"
-            android:backgroundTint="@color/white" />
-
-        <Button
-            android:id="@+id/pauseButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="PAUSE"
-            android:textColor="@android:color/black"
-            android:textStyle="bold"
-            android:backgroundTint="@color/white"/>
-
-        <Button
-            android:id="@+id/stopButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:text="STOP"
-            android:textColor="@android:color/black"
-            android:textStyle="bold"
-            android:backgroundTint="@color/white" />
-
-    </LinearLayout>
-
-</RelativeLayout>
-
-
-package com.example.mediaplayer1
-
-import androidx.activity.ComponentActivity
-import android.media.MediaPlayer
+import android.app.usage.UsageStats
+import android.app.usage.UsageStatsManager
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
-import android.widget.Button
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
+import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : ComponentActivity() {
+class UsageStatsActivity : AppCompatActivity() {
 
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            setContentView(R.layout.activity_main)
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-            // create an instance of mediplayer for audio playback
-            val mediaPlayer: MediaPlayer = MediaPlayer.create(applicationContext, R.raw.music1)
+        // Replace "com.example.yourapp" with the package name of the app you want to monitor
+        val appPackageName = "com.example.yourapp"
 
-            val bPlay: Button = findViewById(R.id.playButton)
-            val bPause: Button = findViewById(R.id.pauseButton)
-            val bStop: Button = findViewById(R.id.stopButton)
+        val usageStatsManager =
+            getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
-            bPlay.setOnClickListener {
-                mediaPlayer.start()
-            }
+        val endTime = System.currentTimeMillis()
+        val beginTime = endTime - 1000 * 60 * 60 // For the last 1 hour
 
-            bPause.setOnClickListener {
-                mediaPlayer.pause()
-            }
+        val usageStatsList =
+            usageStatsManager.queryUsageStats(
+                UsageStatsManager.INTERVAL_DAILY,
+                beginTime,
+                endTime
+            )
 
-            bStop.setOnClickListener {
-                mediaPlayer.stop()
-                mediaPlayer.prepare()
-            }
+        // Filter the results based on the package name
+        val filteredUsageStatsList = usageStatsList.filter { it.packageName == appPackageName }
+
+        // Display usage stats
+        displayUsageStats(filteredUsageStatsList)
+    }
+
+    private fun displayUsageStats(usageStatsList: List<UsageStats>) {
+        // Process and display usage stats as needed
+        if (usageStatsList.isNotEmpty()) {
+            val totalForegroundTime = usageStatsList.sumBy { it.totalTimeInForeground.toInt() }
+
+            // Display or process the information accordingly
+            // (e.g., update UI, log, send to another app)
+            textViewUsageStats.text = "Total Usage Time: $totalForegroundTime milliseconds"
+        } else {
+            textViewUsageStats.text = "No usage stats available for the specified app."
         }
+    }
 }
-
