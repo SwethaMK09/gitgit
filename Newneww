@@ -1,12 +1,55 @@
-import android.app.AppOpsManager
-import android.app.usage.UsageStats
+import android.app.Service
+import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import android.os.IBinder
+
+class UsageStatsService : Service() {
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        checkUsageStats()
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun checkUsageStats() {
+        val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+        val endTime = System.currentTimeMillis()
+        val startTime = endTime - 86400000 // 24 hours ago
+
+        val events = usageStatsManager.queryEvents(startTime, endTime)
+
+        while (events.hasNextEvent()) {
+            val event = UsageEvents.Event()
+            events.getNextEvent(event)
+
+            // Check if the event corresponds to your application
+            if (event.packageName == "your.package.name") {
+                val totalUsageTime = event.timeStamp - startTime
+                // Handle usage information as needed
+                break
+            }
+        }
+    }
+}
+
+
+
+
+<service
+    android:name=".UsageStatsService"
+    android:enabled="true"
+    android:exported="false" />
+
+
+
+import android.content.Intent
 import android.os.Bundle
-import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -14,45 +57,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        checkUsageStatsPermission()
-    }
-
-    private fun checkUsageStatsPermission() {
-        val appOpsManager = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = appOpsManager.checkOpNoThrow(
-            AppOpsManager.OPSTR_GET_USAGE_STATS,
-            android.os.Process.myUid(),
-            packageName
-        )
-
-        if (mode == AppOpsManager.MODE_ALLOWED) {
-            // Permission granted, proceed to use UsageStatsManager
-            displayUsageStats()
-        } else {
-            // Request permission
-            startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-        }
-    }
-
-    private fun displayUsageStats() {
-        val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        val endTime = System.currentTimeMillis()
-        val startTime = endTime - 86400000 // 24 hours ago
-
-        val stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, startTime, endTime)
-
-        // Iterate through stats to find your application's usage
-        for (usageStats in stats) {
-            if (usageStats.packageName == "your.package.name") {
-                // Access usage details from the usageStats object
-                val totalUsageTime = usageStats.totalTimeInForeground
-                textViewUsage.text = "Total Usage Time: $totalUsageTime milliseconds"
-                // Handle usage information as needed
-                break
-            }
-        }
+        // Start the UsageStatsService
+        startService(Intent(this, UsageStatsService::class.java))
     }
 }
+
+
 
 
 <?xml version="1.0" encoding="utf-8"?>
@@ -62,12 +72,12 @@ class MainActivity : AppCompatActivity() {
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/textViewUsage"
+    <!-- Add your UI components as needed -->
+    <Button
+        android:id="@+id/btnStartService"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="Usage Stats will be displayed here."
-        android:textSize="18sp" />
+        android:text="Start Usage Stats Service" />
 
 </RelativeLayout>
