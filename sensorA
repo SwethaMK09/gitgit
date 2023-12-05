@@ -1,17 +1,10 @@
-Provides access to device usage history and statistics. Usage data is aggregated into time intervals: days, weeks, months, and years.
-
-When requesting usage data since a particular time, the request might look something like this:
-
-PAST                   REQUEST_TIME                    TODAY                   FUTURE
-  ————————————————————————————||———————————————————————————¦-----------------------|
-                         YEAR ||                           ¦                       |
-  ————————————————————————————||———————————————————————————¦-----------------------|
-   MONTH            |         ||                MONTH      ¦                       |
-  ——————————————————|—————————||———————————————————————————¦-----------------------|
-    |      WEEK     |     WEEK||    |     WEEK     |     WE¦EK     |      WEEK     |
-  ————————————————————————————||———————————————————|———————¦-----------------------|
-                              ||           |DAY|DAY|DAY|DAY¦DAY|DAY|DAY|DAY|DAY|DAY|
-  ————————————————————————————||———————————————————————————¦-----------------------|
-  
-A request for data in the middle of a time interval will include that interval.
-NOTE: Most methods on this API require the permission android.permission.PACKAGE_USAGE_STATS. However, declaring the permission implies intention to use the API and the user of the device still needs to grant permission through the Settings application. See android.provider.Settings#ACTION_USAGE_ACCESS_SETTINGS. Methods which only return the information for the calling package do not require this permission. E.g. getAppStandbyBucket() and queryEventsForSelf(long,long).
+for (usageStats in stats) {
+            if (usageStats.packageName == "your.package.name") {
+                // Access usage details from the usageStats object
+                val totalUsageTime = usageStats.totalTimeInForeground
+                textViewUsage.text = "Total Usage Time: $totalUsageTime milliseconds"
+                // Handle usage information as needed
+                break
+            }
+        }
+    }
