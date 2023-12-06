@@ -375,3 +375,71 @@ class MusicActivity : ComponentActivity() {
         releaseWakeLock()
     }
 }
+
+
+
+nanannana
+
+
+package com.example.wakelockmonitor
+
+import android.os.Build
+import android.os.Bundle
+import android.os.PowerManager
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+
+        // Check if the API level supports wakelock statistics
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val wakelockStats = powerManager.getWakelockStats()
+            
+            // Process and display wakelock statistics
+            val statsTextView: TextView = findViewById(R.id.statsTextView)
+            statsTextView.text = processAndDisplayStats(wakelockStats)
+        } else {
+            // Handle the case where wakelock statistics are not supported
+            val statsTextView: TextView = findViewById(R.id.statsTextView)
+            statsTextView.text = "Wakelock statistics not supported on this device."
+        }
+    }
+
+    private fun processAndDisplayStats(wakelockStats: Map<String, PowerManager.WakeLock>): String {
+        // Process wakelockStats and format it as needed
+        // For example, iterate through the map and build a formatted string
+        val statsStringBuilder = StringBuilder()
+
+        for ((wakelockTag, wakelock) in wakelockStats) {
+            statsStringBuilder.append("Wakelock Tag: $wakelockTag\n")
+            statsStringBuilder.append("Time Held: ${wakelock.totalTime / 1000} seconds\n")
+            statsStringBuilder.append("--------------------------------\n")
+        }
+
+        return statsStringBuilder.toString()
+    }
+}
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/statsTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="Wakelock Statistics will be displayed here."
+        android:textSize="18sp" />
+
+</RelativeLayout>
