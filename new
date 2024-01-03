@@ -1,70 +1,214 @@
-package com.example.pictureinpicturemode
-
+// Add the necessary imports
+import android.Manifest
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Rect
-import android.net.Uri
+import android.hardware.camera2.CameraAccessException
+import android.hardware.camera2.CameraCaptureSession
+import android.hardware.camera2.CameraCharacteristics
+import android.hardware.camera2.CameraDevice
+import android.hardware.camera2.CameraManager
+import android.hardware.camera2.CaptureRequest
 import android.os.Build
 import android.os.Bundle
-import android.util.Rational
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toAndroidRect
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.viewinterop.AndroidView
+import android.os.Handler
+import android.os.HandlerThread
+import android.view.Surface
+import android.view.TextureView
+import android.widget.Toast
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
-class VideoActivity : ComponentActivity() {
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+class MainActivity : AppCompatActivity() {
 
-    private val isPipSupported by lazy {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
-                packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+    private lateinit var cameraManager: CameraManager
+    private lateinit var frontCameraId: String
+    private lateinit var backCameraId: String
+    private lateinit var cameraDeviceFront: CameraDevice
+    private lateinit var cameraDeviceBack: CameraDevice
+    private lateinit var captureSessionFront: CameraCaptureSession
+    private lateinit var captureSessionBack: CameraCaptureSession
+
+    private lateinit var textureViewFront: TextureView
+    private lateinit var textureViewBack: TextureView
+
+    private val cameraFrontCallback = object : CameraDevice.StateCallback() {
+        override fun onOpened(camera: CameraDevice) {
+            cameraDeviceFront = camera
+            createCameraPreviewSession(cameraDeviceFront, textureViewFront.surface)
+        }
+
+        override fun onDisconnected(camera: CameraDevice) {
+            cameraDeviceFront.close()
+        }
+
+        override fun onError(camera: CameraDevice, error: Int) {
+            cameraDeviceFront.close()
+        }
     }
 
-    private var videoViewBounds = Rect()
+    private val cameraBackCallback = object : CameraDevice.StateCallback() {
+        override fun onOpened(camera: CameraDevice) {
+            cameraDeviceBack = camera
+            createCameraPreviewSession(cameraDeviceBack, textureViewBack.surface)
+        }
+
+        override fun onDisconnected(camera: CameraDevice) {
+            cameraDeviceBack.close()
+        }
+
+        override fun onError(camera: CameraDevice, error: Int) {
+            cameraDeviceBack.close()
+        }
+    }
+
+    private val textureFrontListener = object : TextureView.SurfaceTextureListener {
+        override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
+            openCamera(frontCameraId, cameraFrontCallback)
+        }
+
+        override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {}
+
+        override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean = false
+
+        override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {}
+    }
+
+    private val textureBackListener = object : TextureView.SurfaceTextureListener {
+        override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
+            openCamera(backCameraId, cameraBackCallback)
+        }
+
+        override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {}
+
+        override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean = false
+
+        override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {}
+    }
+
+    private val backgroundHandler: Handler by lazy {
+        val handlerThread = HandlerThread("CameraBackground").apply { start() }
+        Handler(handlerThread.looper)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        setContent {
-            PictureInPictureModeTheme {
-                AndroidView(
-                    factory = {
-                        VideoView(it, null).apply {
-                            setVideoURI(Uri.parse("android.resource://$packageName/${R.raw.sample}"))
-                            start()
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onGloballyPositioned {
-                            videoViewBounds = it.boundsInWindow().toAndroidRect()
-                        }
-                )
+        textureViewFront = findViewById(R.id.textureViewFront)
+        textureViewFront.surfaceTextureListener = textureFrontListener
+
+        textureViewBack = findViewById(R.id.textureViewBack)
+        textureViewBack.surfaceTextureListener = textureBackListener
+
+        cameraManager = getSystemService(Context.CAMERA_SERVICE) as CameraManager
+
+        // Check for camera permissions
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.CAMERA),
+                REQUEST_CAMERA_PERMISSION
+            )
+        } else {
+            setUpCameraIds()
+        }
+    }
+
+    private fun setUpCameraIds() {
+        val cameraIds = cameraManager.cameraIdList
+        for (id in cameraIds) {
+            val characteristics = cameraManager.getCameraCharacteristics(id)
+            val lensFacing = characteristics.get(CameraCharacteristics.LENS_FACING)
+            if (lensFacing == CameraCharacteristics.LENS_FACING_FRONT) {
+                frontCameraId = id
+            } else if (lensFacing == CameraCharacteristics.LENS_FACING_BACK) {
+                backCameraId = id
             }
         }
     }
 
-    private fun updatedPipParams(): PictureInPictureParams? {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            PictureInPictureParams.Builder()
-                .setSourceRectHint(videoViewBounds)
-                .setAspectRatio(Rational(16, 9))
-                .build()
-        } else null
+    private fun openCamera(cameraId: String, callback: CameraDevice.StateCallback) {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            cameraManager.openCamera(cameraId, callback, backgroundHandler)
+        }
     }
 
-    override fun onUserLeaveHint() {
-        super.onUserLeaveHint()
-        if (isPipSupported) {
-            updatedPipParams()?.let { params ->
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    enterPictureInPictureMode(params)
-                }
+    private fun createCameraPreviewSession(cameraDevice: CameraDevice, surface: Surface) {
+        try {
+            val captureRequestBuilder =
+                cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+            captureRequestBuilder.addTarget(surface)
+
+            cameraDevice.createCaptureSession(
+                listOf(surface),
+                object : CameraCaptureSession.StateCallback() {
+                    override fun onConfigured(session: CameraCaptureSession) {
+                        captureSessionFront = session
+                        captureRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE)
+                        session.setRepeatingRequest(captureRequestBuilder.build(), null, backgroundHandler)
+                    }
+
+                    override fun onConfigureFailed(session: CameraCaptureSession) {}
+                },
+                backgroundHandler
+            )
+        } catch (e: CameraAccessException) {
+            e.printStackTrace()
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CAMERA_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                setUpCameraIds()
+            } else {
+                Toast.makeText(this, "Camera permission required", Toast.LENGTH_SHORT).show()
+                finish()
             }
         }
+    }
+
+    companion object {
+        private const val REQUEST_CAMERA_PERMISSION = 1
     }
 }
+
+
+
+
+<uses-feature android:name="android.hardware.camera" />
+<uses-feature android:name="android.hardware.camera.autofocus" />
+
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-feature android:name="android.hardware.camera.front" android:required="false" />
+<uses-feature android:name="android.hardware.camera.back" android:required="false" />
+
+
+
+
+
+<TextureView
+    android:id="@+id/textureViewFront"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
+
+<TextureView
+    android:id="@+id/textureViewBack"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
