@@ -1,219 +1,49 @@
-MainActivity.kt:
+this is a simple camera app which can open both front and back camera. in this i want to open both cameras simultaneously back camera should be on full screen and front should be on picture in picture mode. if front camera full screen and back should be on picture in picture mode. but both should be on same screen package com.example.mytaskcamera
 
-package com.example.playlistmediaapp
-
-import android.content.Intent
+import android.content.ActivityNotFoundException
 import android.os.Bundle
+import android.provider.MediaStore
 import android.widget.Button
+import android.content.Intent
+import android.view.View
+import android.widget.Toast
 import androidx.activity.ComponentActivity
-
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.mytaskcamera.ui.theme.MyTaskCameraTheme
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        val getStartedButton: Button = findViewById(R.id.getStartedButton)
-
-        getStartedButton.setOnClickListener {
-            // Navigate to the playlist activity
-            val intent = Intent(this, MusicActivity::class.java)
-            startActivity(intent)
-        }
-    }
-}
-
-MusicActivity.kt:
-
-package com.example.playlistmediaapp
-
-import android.media.MediaPlayer
-import android.os.Bundle
-import android.widget.Button
-import androidx.activity.ComponentActivity
-
-
-class MusicActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_playlist)
-
-        val mediaPlayer1: MediaPlayer = MediaPlayer.create(applicationContext, R.raw.music1)
-        val mediaPlayer2: MediaPlayer = MediaPlayer.create(applicationContext, R.raw.music2)
-
-        val playButton: Button = findViewById(R.id.playButton)
-        val pauseButton: Button = findViewById(R.id.pauseButton)
-        val stopButton: Button = findViewById(R.id.stopButton)
-
-        val playButton1: Button = findViewById(R.id.playButton1)
-        val pauseButton1: Button = findViewById(R.id.pauseButton1)
-        val stopButton1: Button = findViewById(R.id.stopButton1)
-
-        playButton.setOnClickListener {
-            mediaPlayer1.start()
-        }
-
-        pauseButton.setOnClickListener {
-            mediaPlayer1.pause()
-        }
-
-        stopButton.setOnClickListener {
-            mediaPlayer1.stop()
-            mediaPlayer1.prepare()
-        }
-
-        playButton1.setOnClickListener {
-            mediaPlayer2.start()
-        }
-
-        pauseButton1.setOnClickListener {
-            mediaPlayer2.pause()
-        }
-
-        stopButton1.setOnClickListener {
-            mediaPlayer2.stop()
-            mediaPlayer2.prepare()
+        val myButton: Button = findViewById(R.id.myButton)
+        myButton.setOnClickListener {
+            myCamera()
+            myMessage("Button has been clicked")
         }
 
     }
 
+    private fun myCamera() {
+        val REQUEST_IMAGE_CAPTURE=1
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        try {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
+        } catch (e: ActivityNotFoundException) {
+        }
+    }
+
+    private fun myMessage(message: String) {
+
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+
+    }
+
+
 }
-
-activity_main.xml:
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity"
-    tools:ignore="HardcodedText">
-
-    <TextView
-        android:id="@+id/headingText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="32dp"
-        android:text="MEDIA PLAYER"
-        android:textSize="28sp"
-        android:textStyle="bold" />
-
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/headingText"
-        android:layout_centerHorizontal="true"
-        android:src="@drawable/img" />
-
-    <Button
-        android:id="@+id/getStartedButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginVertical="750dp"
-        android:text="GET STARTED"
-        android:textColor="@android:color/black"
-        android:textStyle="bold"
-        android:backgroundTint="@color/white"
-        />
-
-</RelativeLayout>
-
-activity_music.xml:
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-
-    <!-- Music 1 -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Music 1"
-            android:layout_marginLeft="15dp"/>
-
-
-        <Button
-            android:id="@+id/playButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/white"
-            android:text="PLAY"
-            android:textColor="@android:color/black"
-            android:textStyle="bold"/>
-
-        <Button
-            android:id="@+id/pauseButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/white"
-            android:text="PAUSE"
-            android:textColor="@android:color/black"
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/stopButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/white"
-            android:text="STOP"
-            android:textColor="@android:color/black"
-            android:textStyle="bold" />
-
-    </LinearLayout>
-
-    <!-- Music 2 -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Music 2"
-            android:layout_marginLeft="15dp"/>
-
-
-        <Button
-            android:id="@+id/playButton1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="PLAY"
-            android:textColor="@android:color/black"
-            android:textStyle="bold"
-            android:backgroundTint="@color/white" />
-
-        <Button
-            android:id="@+id/pauseButton1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/white"
-            android:text="PAUSE"
-            android:textColor="@android:color/black"
-            android:textStyle="bold" />
-
-        <Button
-            android:id="@+id/stopButton1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/white"
-            android:text="STOP"
-            android:textColor="@android:color/black"
-            android:textStyle="bold" />
-
-    </LinearLayout>
-
-
-
-</LinearLayout>
