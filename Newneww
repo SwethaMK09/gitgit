@@ -1,9 +1,3 @@
-can you help me with my kotlin android studio project.i used camera2 api in this app the front camera and back camera opens simultaneously and it works fine but i want to insert another logic. if i click on front camera texture view it should open a full screen front camera and if i click on the full screen front camera it should go back to dual camera and if i click on back camera it should open full screen back camera and if i clcik on full screen back camera it should go to dual camera page. also my device is pixel. what i already have is a half screen view of both cameras now i want a full screen view of front and full screen view of back camera. i am using a own camera app not device camera also i will provied my dual camera project code and a sample normal full screen camera app which uses camera manager but it opens device camera so keep this camera project as reference and implement all the logic to open full screen front and back in my dual camera project please 
-use camera2 api make sure the camera app works same like a device camera app when its in full screen i am using pixel6 pro api 34 make the full screen ratio accordingly so it doesnt look like a streached view
-
-
-Dual Camera Project:
-
 main activity:
 package com.example.multicam
  
@@ -288,57 +282,4 @@ build.gradle(project):
 plugins {
     id("com.android.application") version "8.1.3" apply false
     id("org.jetbrains.kotlin.android") version "1.9.0" apply false
-}
-
-Normal Camera Project:
-
-Main Activity: just keep this as reference and do the full screen logic
-package com.example.mytaskcamera
-
-import android.content.ActivityNotFoundException
-import android.os.Bundle
-import android.provider.MediaStore
-import android.widget.Button
-import android.content.Intent
-import android.view.View
-import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.mytaskcamera.ui.theme.MyTaskCameraTheme
-
-class MainActivity : ComponentActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        val myButton: Button = findViewById(R.id.myButton)
-        myButton.setOnClickListener {
-            myCamera()
-            myMessage("Button has been clicked")
-        }
-
-    }
-
-    private fun myCamera() {
-        val REQUEST_IMAGE_CAPTURE=1
-        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        try {
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-        } catch (e: ActivityNotFoundException) {
-        }
-    }
-
-    private fun myMessage(message: String) {
-
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-
-    }
-
-
 }
