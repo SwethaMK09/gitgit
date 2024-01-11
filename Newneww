@@ -9,10 +9,15 @@ private fun setFullScreenView(textureView: TextureView, isFullScreen: Boolean) {
         val dualCameraHeight = screenHeight / 2
 
         if (textureView == textureViewFront) {
+            // Calculate the width and height to maintain the camera preview's aspect ratio
+            val aspectRatio = dualCameraWidth.toFloat() / dualCameraHeight.toFloat()
+            val calculatedWidth = min(screenWidth, (screenHeight * aspectRatio).toInt())
+            val calculatedHeight = min(screenHeight, (screenWidth / aspectRatio).toInt())
+
             textureView.layoutParams =
                 LinearLayout.LayoutParams(
-                    screenWidth, // Set the device's screen width for full-screen view
-                    screenHeight // Set the device's screen height for full-screen view
+                    calculatedWidth,
+                    calculatedHeight
                 )
             textureViewBack.visibility = View.GONE
         } else {
