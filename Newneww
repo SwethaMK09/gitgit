@@ -1,24 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".MainActivity">
+private fun setFullScreenView(textureView: TextureView, isFullScreen: Boolean) {
+    if (isFullScreen) {
+        val displayMetrics = resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels
+        val screenHeight = displayMetrics.heightPixels
 
-    <TextureView
-        android:id="@+id/textureViewFront"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:onClick="onClickTextureView" />
+        textureView.layoutParams =
+            LinearLayout.LayoutParams(
+                screenWidth, // Set the device's screen width for full-screen view
+                screenHeight // Set the device's screen height for full-screen view
+            )
 
-    <TextureView
-        android:id="@+id/textureViewBack"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:onClick="onClickTextureView" />
-
-</LinearLayout>
+        if (textureView == textureViewFront) {
+            textureViewBack.visibility = View.GONE
+        } else {
+            textureViewFront.visibility = View.GONE
+        }
+    } else {
+        // Set the layout parameters for dual-camera views (adjust as needed)
+        textureView.layoutParams =
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                1f
+            )
+        textureViewFront.visibility = View.VISIBLE
+        textureViewBack.visibility = View.VISIBLE
+    }
+}
