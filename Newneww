@@ -4,23 +4,37 @@ private fun setFullScreenView(textureView: TextureView, isFullScreen: Boolean) {
         val screenWidth = displayMetrics.widthPixels
         val screenHeight = displayMetrics.heightPixels
 
-        textureView.layoutParams =
-            LinearLayout.LayoutParams(
-                screenWidth, // Set the device's screen width for full-screen view
-                screenHeight // Set the device's screen height for full-screen view
-            )
+        // Set a fixed width and height for dual cameras (adjust as needed)
+        val dualCameraWidth = screenWidth / 2
+        val dualCameraHeight = screenHeight / 2
 
         if (textureView == textureViewFront) {
+            textureView.layoutParams =
+                LinearLayout.LayoutParams(
+                    screenWidth, // Set the device's screen width for full-screen view
+                    screenHeight // Set the device's screen height for full-screen view
+                )
             textureViewBack.visibility = View.GONE
         } else {
+            textureView.layoutParams =
+                LinearLayout.LayoutParams(
+                    dualCameraWidth,
+                    dualCameraHeight
+                )
             textureViewFront.visibility = View.GONE
         }
     } else {
-        // Set the layout parameters for dual-camera views (adjust as needed)
-        textureView.layoutParams =
+        // Set the layout parameters for dual-camera views (fixed width and height)
+        textureViewFront.layoutParams =
             LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                0,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                1f
+            )
+        textureViewBack.layoutParams =
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
                 1f
             )
         textureViewFront.visibility = View.VISIBLE
